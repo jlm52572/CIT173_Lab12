@@ -1,0 +1,23 @@
+if (( $# != 2 )); then
+    echo "Illegal number of parameters"
+    exit
+fi
+
+
+# $1 - new user name	
+# $2 - login name
+
+
+echo "DISPLAY NAME: " $1
+echo "LOGIN NAME: " $2
+
+#mkdir /home/$2
+#groupadd $2
+useradd $2
+chown $2 /home/$2
+chgrp $2 /home/$2
+
+
+
+
+echo "I HATE LINUX!!!!!!"

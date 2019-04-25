@@ -1,0 +1,68 @@
+#!/bin/bash
+
+
+DEFAULT_PASSWORD=toor
+
+function showHelp() {
+   echo "USAGE: makeuser [username] [login name]"
+   echo "(make sure to run as root)"
+}
+
+function checkStatus() {
+   if [ $? -ne 0 ]; then
+   echo "ERROR: $1"
+   exit 1
+fi
+
+} 
+# check to make sure that the appropriate number of arguments are present 
+   if [ $# -lt 2 ]; then
+   echo "ERROR: Invaled arguments"
+   showHelp
+   exit 1
+
+fi
+
+# check to make sure the user is running as root
+if [ $EUID -ne 0 ]; then
+  echo "You must run this command as root"
+  exit 1
+
+fi
+
+
+# set some helper variables
+
+Username=$1
+Loginname=$2
+Groupname=${Username}-group
+
+# create a new user group for the user
+groupadd $Groupname 
+checkStatus "Failed to create new primary group for user"
+
+
+#create the new user
+useradd -d /home/$Username -g $Groupname -c $Loginname $Username
+checkStatus "Failed to create new user"
+
+# Set the default password for the new user
+echo $DEFAULT_PASSWORD | passwd --stdin $Username
+checkStatus "Failed to set default password for the new user"
+
+#set the default password for the new user
+passwd -e $Username
+
+if [ -f /etc/profile ]; then
+   cp /etc/profile /home/$Username/.bash_profile
+else
+   touch /home/$Username/bash_profile
+fi
+
+if [ -f /etc/bashrc ]; then
+   cp /etc/bashrc /home/$Username/.bashrc
+else
+   touch /home/$Username/.bashrc
+fi
+chown $Username:$Groupname -R /home/$Username
+
